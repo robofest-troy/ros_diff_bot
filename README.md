@@ -57,7 +57,7 @@ source install/setup.bash
 
 To visualize the robot in RViz:
 ```bash
-ros2 launch ros_diff_bot view_robot.launch.py
+ros2 launch ros_diff_bot diffbot.launch.py
 ```
 
 ### 2. Run with Mock Hardware
