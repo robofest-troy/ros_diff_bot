@@ -31,50 +31,30 @@ The ROS DiffBot package demonstrates:
 
 1. Clone this repository to your ROS 2 workspace:
 ```bash
+mkdir -p ~/ros2_ws/src
 cd ~/ros2_ws/src
 git clone <repository_url> ros_diff_bot
 ```
 
-2. Install dependencies:
+2. Build the package:
 ```bash
-cd ~/ros2_ws
-rosdep install --from-paths src --ignore-src -r -y
-```
-
-3. Build the package:
-```bash
+cd ~/ros2_ws/src/ros_diff_bot
 colcon build --packages-select ros_diff_bot
 ```
 
-4. Source the workspace:
+3. Source the workspace:
 ```bash
 source install/setup.bash
 ```
 
-## Usage
-
-### 1. View Robot Description
+4. View Robot Description
 
 To visualize the robot in RViz:
 ```bash
 ros2 launch ros_diff_bot diffbot.launch.py
 ```
 
-### 2. Run with Mock Hardware
-
-To run the complete system with mock hardware:
-```bash
-ros2 launch ros_diff_bot diffbot.launch.py use_mock_hardware:=true
-```
-
-### 3. Run with Custom Hardware
-
-To run with the custom hardware interface:
-```bash
-ros2 launch ros_diff_bot diffbot.launch.py use_mock_hardware:=false
-```
-
-### 4. Control the Robot
+5. Control the Robot
 
 Once the robot is running, you can control it using:
 ```bash
