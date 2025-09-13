@@ -3,7 +3,7 @@
 <package format="3">
   <name>ros_diff_bot</name>
   <version>1.0.0</version>
-  <description>Standalone DiffBot package extracted from ros2_control_demos example_2</description>
+  <description>Differential drive robot package with CAN communication support for wheel velocity commands</description>
 
   <maintainer email="user@example.com">User</maintainer>
 
@@ -19,12 +19,6 @@
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_lifecycle</depend>
-  
-  <!-- CAN communication dependencies -->
-  <depend>socketcan_interface</depend>
-  <depend>std_msgs</depend>
-  <depend>geometry_msgs</depend>
-  <depend>diagnostic_msgs</depend>
 
   <exec_depend>controller_manager</exec_depend>
   <exec_depend>diff_drive_controller</exec_depend>

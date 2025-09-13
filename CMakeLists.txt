@@ -11,10 +11,6 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
   pluginlib
   rclcpp
   rclcpp_lifecycle
-  socketcan_interface
-  std_msgs
-  geometry_msgs
-  diagnostic_msgs
 )
 
 # Specify the required version of ros2_control
