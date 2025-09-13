@@ -513,10 +513,10 @@ void DiffBotSystemHardware::createVelocityCANMessage(const CANWheelConfig& wheel
   int32_t scaled_velocity = static_cast<int32_t>(velocity * wheel_config.velocity_scale);
   
   // Pack velocity data (little-endian)
-  frame.data[can_config_.velocity_byte_start] = scaled_velocity & 0xFF;
-  frame.data[can_config_.velocity_byte_start + 1] = (scaled_velocity >> 8) & 0xFF;
-  frame.data[can_config_.velocity_byte_start + 2] = (scaled_velocity >> 16) & 0xFF;
-  frame.data[can_config_.velocity_byte_start + 3] = (scaled_velocity >> 24) & 0xFF;
+  frame.data[can_config_.velocity_byte_start] = static_cast<uint8_t>(scaled_velocity & 0xFF);
+  frame.data[can_config_.velocity_byte_start + 1] = static_cast<uint8_t>((scaled_velocity >> 8) & 0xFF);
+  frame.data[can_config_.velocity_byte_start + 2] = static_cast<uint8_t>((scaled_velocity >> 16) & 0xFF);
+  frame.data[can_config_.velocity_byte_start + 3] = static_cast<uint8_t>((scaled_velocity >> 24) & 0xFF);
   
   // Set status byte (0x01 = normal operation)
   frame.data[can_config_.status_byte] = 0x01;
@@ -624,10 +624,10 @@ void DiffBotSystemHardware::sendHeartbeatMessage()
   auto timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
   
   // Pack timestamp in heartbeat message
-  heartbeat_data[0] = timestamp & 0xFF;
-  heartbeat_data[1] = (timestamp >> 8) & 0xFF;
-  heartbeat_data[2] = (timestamp >> 16) & 0xFF;
-  heartbeat_data[3] = (timestamp >> 24) & 0xFF;
+  heartbeat_data[0] = static_cast<uint8_t>(timestamp & 0xFF);
+  heartbeat_data[1] = static_cast<uint8_t>((timestamp >> 8) & 0xFF);
+  heartbeat_data[2] = static_cast<uint8_t>((timestamp >> 16) & 0xFF);
+  heartbeat_data[3] = static_cast<uint8_t>((timestamp >> 24) & 0xFF);
   heartbeat_data[4] = 0xAA; // Heartbeat signature
   heartbeat_data[5] = 0x55; // Heartbeat signature
   
