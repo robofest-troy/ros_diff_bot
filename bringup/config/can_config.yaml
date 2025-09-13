@@ -1,0 +1,46 @@
+can_interface:
+  ros__parameters:
+    # CAN Bus Configuration
+    can_device: "can0"                    # CAN device name
+    can_bitrate: 500000                   # CAN bitrate in bps
+    can_timeout_ms: 100                   # CAN timeout in milliseconds
+    
+    # CAN Message Configuration
+    broadcast_interval_ms: 10             # CAN message broadcast interval (10ms as required)
+    max_retries: 3                        # Maximum retry attempts for failed CAN messages
+    
+    # Wheel CAN IDs and Configuration
+    wheels:
+      left_wheel:
+        can_id: 0x101                     # CAN ID for left wheel velocity command
+        joint_name: "left_wheel_joint"    # Joint name for left wheel
+        velocity_scale: 1000.0            # Scale factor for velocity (convert m/s to counts/s)
+        direction_multiplier: 1.0         # Direction multiplier (1.0 or -1.0)
+        
+      right_wheel:
+        can_id: 0x102                     # CAN ID for right wheel velocity command  
+        joint_name: "right_wheel_joint"   # Joint name for right wheel
+        velocity_scale: 1000.0            # Scale factor for velocity (convert m/s to counts/s)
+        direction_multiplier: 1.0         # Direction multiplier (1.0 or -1.0)
+    
+    # CAN Message Format Configuration
+    message_format:
+      data_length: 8                      # CAN message data length (bytes)
+      velocity_byte_start: 0              # Starting byte for velocity data
+      velocity_byte_length: 4             # Number of bytes for velocity data (int32)
+      status_byte: 4                      # Byte for status/mode information
+      checksum_byte: 7                    # Byte for checksum (optional)
+      
+    # Hardware-specific Parameters
+    hardware:
+      enable_can_monitoring: true         # Enable CAN bus monitoring/diagnostics
+      enable_heartbeat: true              # Enable periodic heartbeat messages
+      heartbeat_interval_ms: 1000         # Heartbeat message interval
+      heartbeat_can_id: 0x700             # CAN ID for heartbeat messages
+      
+    # Safety Configuration
+    safety:
+      max_velocity_command: 10.0          # Maximum allowed velocity command (m/s)
+      emergency_stop_can_id: 0x080        # CAN ID for emergency stop
+      enable_watchdog: true               # Enable command watchdog
+      watchdog_timeout_ms: 500            # Watchdog timeout (stop if no commands)

@@ -18,6 +18,10 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <unordered_map>
+#include <thread>
+#include <atomic>
+#include <chrono>
 
 #include "hardware_interface/handle.hpp"
 #include "hardware_interface/hardware_info.hpp"
@@ -30,8 +34,54 @@
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 #include "rclcpp_lifecycle/state.hpp"
 
+// CAN communication headers
+#include <linux/can.h>
+#include <linux/can/raw.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <net/if.h>
+#include <unistd.h>
+
 namespace ros_diff_bot
 {
+
+// Structure to hold CAN wheel configuration
+struct CANWheelConfig {
+  uint32_t can_id;
+  std::string joint_name;
+  double velocity_scale;
+  double direction_multiplier;
+};
+
+// Structure to hold CAN interface configuration
+struct CANInterfaceConfig {
+  std::string device_name;
+  uint32_t bitrate;
+  uint32_t timeout_ms;
+  uint32_t broadcast_interval_ms;
+  uint32_t max_retries;
+  std::unordered_map<std::string, CANWheelConfig> wheels;
+  
+  // Message format configuration
+  uint8_t data_length;
+  uint8_t velocity_byte_start;
+  uint8_t velocity_byte_length;
+  uint8_t status_byte;
+  uint8_t checksum_byte;
+  
+  // Safety configuration
+  double max_velocity_command;
+  uint32_t emergency_stop_can_id;
+  bool enable_watchdog;
+  uint32_t watchdog_timeout_ms;
+  
+  // Monitoring configuration
+  bool enable_can_monitoring;
+  bool enable_heartbeat;
+  uint32_t heartbeat_interval_ms;
+  uint32_t heartbeat_can_id;
+};
+
 class DiffBotSystemHardware : public hardware_interface::SystemInterface
 {
 public:
@@ -59,6 +109,27 @@ private:
   // Parameters for the DiffBot simulation
   double hw_start_sec_;
   double hw_stop_sec_;
+  
+  // CAN communication members
+  CANInterfaceConfig can_config_;
+  int can_socket_;
+  std::atomic<bool> can_active_;
+  std::thread can_broadcast_thread_;
+  std::chrono::steady_clock::time_point last_command_time_;
+  
+  // Wheel velocity commands (thread-safe access)
+  std::unordered_map<std::string, std::atomic<double>> wheel_velocity_commands_;
+  
+  // CAN communication methods
+  bool initializeCANInterface();
+  void closeCANInterface();
+  bool sendCANMessage(uint32_t can_id, const uint8_t* data, uint8_t length);
+  void canBroadcastLoop();
+  bool loadCANConfiguration();
+  void createVelocityCANMessage(const CANWheelConfig& wheel_config, double velocity, can_frame& frame);
+  void sendHeartbeatMessage();
+  bool isCommandTimeout();
+  uint8_t calculateChecksum(const uint8_t* data, uint8_t length);
 };
 
 }  // namespace ros_diff_bot

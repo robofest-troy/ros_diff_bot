@@ -1,24 +1,29 @@
-# ROS DiffBot - Standalone Differential Drive Robot Package
+# ROS DiffBot - Standalone Differential Drive Robot Package with CAN Communication
 
-This package is a standalone implementation of a differential drive robot (DiffBot) extracted from the ros2_control_demos example_2. It provides a complete ROS 2 package that can be built and run independently.
+This package is a standalone implementation of a differential drive robot (DiffBot) with enhanced CAN communication capabilities. It provides a complete ROS 2 package that broadcasts wheel velocity commands via CAN bus at precise intervals.
 
 ## Overview
 
 The ROS DiffBot package demonstrates:
-- Hardware interface implementation for a differential drive robot
-- ros2_control integration
-- Controller configuration (diff_drive_controller, joint_state_broadcaster)
+- Hardware interface implementation for a differential drive robot with CAN communication
+- Real-time CAN message broadcasting (10ms intervals)
+- ros2_control integration with configurable CAN parameters
+- Controller configuration (diff_drive_controller, joint_state_broadcaster)  
 - Simulation capabilities with mock hardware
 - URDF robot description
 - Launch files for robot visualization and control
+- CAN message monitoring and debugging tools
 
 ## Features
 
-- **Hardware Interface**: Custom DiffBotSystemHardware class implementing SystemInterface
+- **CAN Communication**: Real-time wheel velocity commands via CAN bus
+- **Hardware Interface**: Custom DiffBotSystemHardware class with CAN integration
 - **Controllers**: Differential drive controller for mobile base control
+- **Configuration**: YAML-based CAN parameter configuration
 - **Visualization**: RViz configuration for robot visualization
-- **Mock Hardware**: Option to run with simulated hardware
+- **Mock Hardware**: Option to run with simulated hardware for testing
 - **Complete URDF**: Robot description with differential drive kinematics
+- **Monitoring Tools**: CAN message logging and debugging utilities
 
 ## Prerequisites
 
@@ -26,6 +31,45 @@ The ROS DiffBot package demonstrates:
 - ros2_control packages
 - diff_drive_controller package
 - joint_state_broadcaster package
+- can-utils package (`sudo apt install can-utils`)
+- Linux SocketCAN support
+
+## Quick Start with CAN Logging
+
+### 1. Setup Virtual CAN (for testing)
+```bash
+cd ~/ros2_ws/src/ros_diff_bot
+./setup_can.sh setup-vcan vcan0
+```
+
+### 2. Launch with CAN Message Logging
+```bash
+# Terminal 1: Launch robot with debug logging
+ros2 launch ros_diff_bot diffbot_can.launch.py \
+  can_device:=vcan0 \
+  use_mock_hardware:=true \
+  --ros-args --log-level debug
+
+# Terminal 2: Monitor CAN messages
+./setup_can.sh monitor vcan0
+
+# Terminal 3: Send velocity commands
+ros2 topic pub /cmd_vel geometry_msgs/msg/Twist \
+  '{linear: {x: 1.0}, angular: {z: 0.5}}' --rate 1
+```
+
+### 3. View CAN Messages in Logs
+
+The enhanced logging shows detailed CAN communication:
+
+```bash
+# View real-time logs with CAN messages
+ros2 node info /controller_manager
+
+# Check log files for CAN communication details
+./test_can_messages.sh
+# Choose option 6 to show logs with CAN messages
+```
 
 ## Installation
 
@@ -36,18 +80,114 @@ cd ~/ros2_ws/src
 git clone <repository_url> ros_diff_bot
 ```
 
-2. Build the package:
+2. Install CAN utilities:
+```bash
+sudo apt update
+sudo apt install can-utils
+```
+
+3. Build the package:
 ```bash
 cd ~/ros2_ws/src/ros_diff_bot
 colcon build --packages-select ros_diff_bot
 ```
 
-3. Source the workspace:
+4. Source the workspace:
 ```bash
 source install/setup.bash
 ```
 
-4. View Robot Description
+## Viewing CAN Messages in Logs
+
+The enhanced hardware interface provides detailed logging of CAN communication. Here's how to see CAN messages in the logs:
+
+### 1. Enable Debug Logging
+
+Launch with debug logging to see detailed CAN message information:
+
+```bash
+ros2 launch ros_diff_bot diffbot_can.launch.py \
+  can_device:=vcan0 \
+  use_mock_hardware:=true \
+  --ros-args --log-level debug
+```
+
+### 2. Monitor Console Output
+
+You'll see log messages like:
+
+```
+[INFO] [diffbot_system_hardware]: CAN Configuration loaded successfully:
+[INFO] [diffbot_system_hardware]:   Device: vcan0
+[INFO] [diffbot_system_hardware]:   Bitrate: 500000 bps
+[INFO] [diffbot_system_hardware]:   Broadcast Interval: 10 ms
+[INFO] [diffbot_system_hardware]:   Left Wheel CAN ID: 0x101
+[INFO] [diffbot_system_hardware]:   Right Wheel CAN ID: 0x102
+[INFO] [diffbot_system_hardware]: CAN broadcast loop started - sending messages every 10 ms
+[INFO] [diffbot_system_hardware]: CAN Status: left_wheel velocity=1.500 m/s, CAN_ID=0x101, scaled_vel=1500
+[INFO] [diffbot_system_hardware]: CAN Status: right_wheel velocity=0.500 m/s, CAN_ID=0x102, scaled_vel=500
+[DEBUG] [diffbot_system_hardware]: CAN TX: ID=0x101, DLC=8, Data=[DC 05 00 00 01 00 00 5D]
+[DEBUG] [diffbot_system_hardware]: CAN TX: ID=0x102, DLC=8, Data=[F4 01 00 00 01 00 00 F5]
+[DEBUG] [diffbot_system_hardware]: Heartbeat message sent on CAN ID 0x700
+```
+
+### 3. Monitor CAN Bus Directly
+
+In a separate terminal, monitor the actual CAN messages:
+
+```bash
+# Setup virtual CAN if not already done
+./setup_can.sh setup-vcan vcan0
+
+# Monitor CAN messages
+candump vcan0
+
+# Output will show:
+#  vcan0  101   [8]  DC 05 00 00 01 00 00 5D
+#  vcan0  102   [8]  F4 01 00 00 01 00 00 F5
+#  vcan0  700   [8]  00 00 00 00 00 AA 55 00
+```
+
+### 4. Understanding CAN Message Format
+
+Each CAN message contains:
+- **Bytes 0-3**: Velocity (int32, little-endian, scaled by 1000)
+- **Byte 4**: Status (0x01 = normal operation)
+- **Bytes 5-6**: Reserved (0x00)
+- **Byte 7**: Checksum (XOR of bytes 0-6)
+
+Example: `DC 05 00 00 01 00 00 5D`
+- Velocity: 0x000005DC = 1500 (1.5 m/s * 1000 scale)
+- Status: 0x01 (normal)
+- Checksum: 0x5D
+
+### 5. Log File Analysis
+
+Check ROS2 log files for detailed CAN communication history:
+
+```bash
+# Use the test script to find and analyze logs
+./test_can_messages.sh
+# Choose option 6: "Show logs with CAN messages"
+
+# Or manually check logs
+find ~/.ros/log -name "*.log" -mmin -10 -exec grep -l "CAN\|diffbot" {} \;
+```
+
+### 6. Performance Monitoring
+
+The logs also show timing information:
+
+```
+[WARN] [diffbot_system_hardware]: CAN broadcast loop running behind schedule: took 15 ms
+[INFO] [diffbot_system_hardware]: CAN broadcast loop stopped after 25000 iterations
+```
+
+This helps monitor if the 10ms broadcast interval is being maintained.
+
+## Usage
+
+### 4. View Robot Description
 
 To visualize the robot in RViz:
 ```bash

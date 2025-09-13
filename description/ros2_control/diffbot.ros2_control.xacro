@@ -1,7 +1,19 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <xacro:macro name="diffbot_ros2_control" params="name prefix use_mock_hardware">
+  <xacro:macro name="diffbot_ros2_control" params="name prefix use_mock_hardware 
+               can_device:=can0 
+               can_bitrate:=500000 
+               left_wheel_can_id:=0x101 
+               right_wheel_can_id:=0x102
+               broadcast_interval_ms:=10
+               velocity_scale:=1000.0
+               max_velocity_command:=10.0
+               enable_can_monitoring:=true
+               enable_heartbeat:=true
+               heartbeat_can_id:=0x700
+               emergency_stop_can_id:=0x080
+               config_file:=''">
 
     <ros2_control name="${name}" type="system">
       <xacro:unless value="${use_mock_hardware}">
@@ -9,6 +21,28 @@
           <plugin>ros_diff_bot/DiffBotSystemHardware</plugin>
           <param name="example_param_hw_start_duration_sec">0</param>
           <param name="example_param_hw_stop_duration_sec">3.0</param>
+          
+          <!-- CAN Interface Configuration -->
+          <param name="can_device">${can_device}</param>
+          <param name="can_bitrate">${can_bitrate}</param>
+          <param name="broadcast_interval_ms">${broadcast_interval_ms}</param>
+          <param name="velocity_scale">${velocity_scale}</param>
+          <param name="max_velocity_command">${max_velocity_command}</param>
+          
+          <!-- Wheel CAN IDs -->
+          <param name="left_wheel_can_id">${left_wheel_can_id}</param>
+          <param name="right_wheel_can_id">${right_wheel_can_id}</param>
+          
+          <!-- Monitoring and Safety -->
+          <param name="enable_can_monitoring">${enable_can_monitoring}</param>
+          <param name="enable_heartbeat">${enable_heartbeat}</param>
+          <param name="heartbeat_can_id">${heartbeat_can_id}</param>
+          <param name="emergency_stop_can_id">${emergency_stop_can_id}</param>
+          
+          <!-- Optional external config file -->
+          <xacro:if value="${config_file != ''}">
+            <param name="config_file">${config_file}</param>
+          </xacro:if>
         </hardware>
       </xacro:unless>
       <xacro:if value="${use_mock_hardware}">
