@@ -52,7 +52,7 @@ hardware_interface::CallbackReturn DiffBotSystemHardware::on_init(
   // Load CAN configuration from parameters
   if (!loadCANConfiguration())
   {
-    RCLCPP_ERROR(get_logger(), "Failed to load CAN configuration");
+    RCLCPP_ERROR(this->get_logger(), "Failed to load CAN configuration");
     return hardware_interface::CallbackReturn::ERROR;
   }
 
@@ -68,7 +68,7 @@ hardware_interface::CallbackReturn DiffBotSystemHardware::on_init(
     if (joint.command_interfaces.size() != 1)
     {
       RCLCPP_FATAL(
-        get_logger(), "Joint '%s' has %zu command interfaces found. 1 expected.",
+        this->get_logger(), "Joint '%s' has %zu command interfaces found. 1 expected.",
         joint.name.c_str(), joint.command_interfaces.size());
       return hardware_interface::CallbackReturn::ERROR;
     }
@@ -76,7 +76,7 @@ hardware_interface::CallbackReturn DiffBotSystemHardware::on_init(
     if (joint.command_interfaces[0].name != hardware_interface::HW_IF_VELOCITY)
     {
       RCLCPP_FATAL(
-        get_logger(), "Joint '%s' have %s command interfaces found. '%s' expected.",
+        this->get_logger(), "Joint '%s' have %s command interfaces found. '%s' expected.",
         joint.name.c_str(), joint.command_interfaces[0].name.c_str(),
         hardware_interface::HW_IF_VELOCITY);
       return hardware_interface::CallbackReturn::ERROR;
@@ -85,7 +85,7 @@ hardware_interface::CallbackReturn DiffBotSystemHardware::on_init(
     if (joint.state_interfaces.size() != 2)
     {
       RCLCPP_FATAL(
-        get_logger(), "Joint '%s' has %zu state interface. 2 expected.", joint.name.c_str(),
+        this->get_logger(), "Joint '%s' has %zu state interface. 2 expected.", joint.name.c_str(),
         joint.state_interfaces.size());
       return hardware_interface::CallbackReturn::ERROR;
     }
@@ -93,7 +93,7 @@ hardware_interface::CallbackReturn DiffBotSystemHardware::on_init(
     if (joint.state_interfaces[0].name != hardware_interface::HW_IF_POSITION)
     {
       RCLCPP_FATAL(
-        get_logger(), "Joint '%s' have '%s' as first state interface. '%s' expected.",
+        this->get_logger(), "Joint '%s' have '%s' as first state interface. '%s' expected.",
         joint.name.c_str(), joint.state_interfaces[0].name.c_str(),
         hardware_interface::HW_IF_POSITION);
       return hardware_interface::CallbackReturn::ERROR;
@@ -102,7 +102,7 @@ hardware_interface::CallbackReturn DiffBotSystemHardware::on_init(
     if (joint.state_interfaces[1].name != hardware_interface::HW_IF_VELOCITY)
     {
       RCLCPP_FATAL(
-        get_logger(), "Joint '%s' have '%s' as second state interface. '%s' expected.",
+        this->get_logger(), "Joint '%s' have '%s' as second state interface. '%s' expected.",
         joint.name.c_str(), joint.state_interfaces[1].name.c_str(),
         hardware_interface::HW_IF_VELOCITY);
       return hardware_interface::CallbackReturn::ERROR;
@@ -116,19 +116,19 @@ hardware_interface::CallbackReturn DiffBotSystemHardware::on_configure(
   const rclcpp_lifecycle::State & /*previous_state*/)
 {
   // BEGIN: This part here is for exemplary purposes - Please do not copy to your production code
-  RCLCPP_INFO(get_logger(), "Configuring ...please wait...");
+  RCLCPP_INFO(this->get_logger(), "Configuring ...please wait...");
 
   for (int i = 0; i < hw_start_sec_; i++)
   {
     rclcpp::sleep_for(std::chrono::seconds(1));
-    RCLCPP_INFO(get_logger(), "%.1f seconds left...", hw_start_sec_ - i);
+    RCLCPP_INFO(this->get_logger(), "%.1f seconds left...", hw_start_sec_ - i);
   }
   // END: This part here is for exemplary purposes - Please do not copy to your production code
 
   // Initialize CAN interface
   if (!initializeCANInterface())
   {
-    RCLCPP_ERROR(get_logger(), "Failed to initialize CAN interface");
+    RCLCPP_ERROR(this->get_logger(), "Failed to initialize CAN interface");
     return hardware_interface::CallbackReturn::ERROR;
   }
 
@@ -148,7 +148,7 @@ hardware_interface::CallbackReturn DiffBotSystemHardware::on_configure(
     velocity = 0.0;
   }
   
-  RCLCPP_INFO(get_logger(), "Successfully configured!");
+  RCLCPP_INFO(this->get_logger(), "Successfully configured!");
 
   return hardware_interface::CallbackReturn::SUCCESS;
 }
@@ -157,12 +157,12 @@ hardware_interface::CallbackReturn DiffBotSystemHardware::on_activate(
   const rclcpp_lifecycle::State & /*previous_state*/)
 {
   // BEGIN: This part here is for exemplary purposes - Please do not copy to your production code
-  RCLCPP_INFO(get_logger(), "Activating ...please wait...");
+  RCLCPP_INFO(this->get_logger(), "Activating ...please wait...");
 
   for (auto i = 0; i < hw_start_sec_; i++)
   {
     rclcpp::sleep_for(std::chrono::seconds(1));
-    RCLCPP_INFO(get_logger(), "%.1f seconds left...", hw_start_sec_ - i);
+    RCLCPP_INFO(this->get_logger(), "%.1f seconds left...", hw_start_sec_ - i);
   }
   // END: This part here is for exemplary purposes - Please do not copy to your production code
 
@@ -177,7 +177,7 @@ hardware_interface::CallbackReturn DiffBotSystemHardware::on_activate(
   can_broadcast_thread_ = std::thread(&DiffBotSystemHardware::canBroadcastLoop, this);
   last_command_time_ = std::chrono::steady_clock::now();
 
-  RCLCPP_INFO(get_logger(), "Successfully activated! CAN broadcast started.");
+  RCLCPP_INFO(this->get_logger(), "Successfully activated! CAN broadcast started.");
 
   return hardware_interface::CallbackReturn::SUCCESS;
 }
@@ -186,7 +186,7 @@ hardware_interface::CallbackReturn DiffBotSystemHardware::on_deactivate(
   const rclcpp_lifecycle::State & /*previous_state*/)
 {
   // BEGIN: This part here is for exemplary purposes - Please do not copy to your production code
-  RCLCPP_INFO(get_logger(), "Deactivating ...please wait...");
+  RCLCPP_INFO(this->get_logger(), "Deactivating ...please wait...");
 
   // Stop CAN broadcast thread
   can_active_ = false;
@@ -198,14 +198,14 @@ hardware_interface::CallbackReturn DiffBotSystemHardware::on_deactivate(
   for (auto i = 0; i < hw_stop_sec_; i++)
   {
     rclcpp::sleep_for(std::chrono::seconds(1));
-    RCLCPP_INFO(get_logger(), "%.1f seconds left...", hw_stop_sec_ - i);
+    RCLCPP_INFO(this->get_logger(), "%.1f seconds left...", hw_stop_sec_ - i);
   }
   // END: This part here is for exemplary purposes - Please do not copy to your production code
 
   // Close CAN interface
   closeCANInterface();
 
-  RCLCPP_INFO(get_logger(), "Successfully deactivated!");
+  RCLCPP_INFO(this->get_logger(), "Successfully deactivated!");
 
   return hardware_interface::CallbackReturn::SUCCESS;
 }
@@ -232,7 +232,7 @@ hardware_interface::return_type DiffBotSystemHardware::read(
          << "'!";
     }
   }
-  RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 500, "%s", ss.str().c_str());
+  RCLCPP_INFO_THROTTLE(this->get_logger(), this->get_clock(), 500, "%s", ss.str().c_str());
   // END: This part here is for exemplary purposes - Please do not copy to your production code
 
   return hardware_interface::return_type::OK;
@@ -261,7 +261,7 @@ hardware_interface::return_type DiffBotSystemHardware::write(
         if (std::abs(velocity) > can_config_.max_velocity_command)
         {
           velocity = (velocity > 0) ? can_config_.max_velocity_command : -can_config_.max_velocity_command;
-          RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000, 
+          RCLCPP_WARN_THROTTLE(this->get_logger(), this->get_clock(), 1000, 
                                "Velocity command for %s exceeded limit, clamped to %.2f", 
                                wheel_name.c_str(), velocity);
         }
@@ -278,7 +278,7 @@ hardware_interface::return_type DiffBotSystemHardware::write(
   // Update last command time for watchdog
   last_command_time_ = std::chrono::steady_clock::now();
   
-  RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 500, "%s", ss.str().c_str());
+  RCLCPP_INFO_THROTTLE(this->get_logger(), this->get_clock(), 500, "%s", ss.str().c_str());
   // END: This part here is for exemplary purposes - Please do not copy to your production code
 
   return hardware_interface::return_type::OK;
@@ -359,15 +359,15 @@ bool DiffBotSystemHardware::loadCANConfiguration()
     can_config_.heartbeat_can_id = static_cast<uint32_t>(std::stoul(info_.hardware_parameters.count("heartbeat_can_id") ? 
                                              info_.hardware_parameters.at("heartbeat_can_id") : "0x700", nullptr, 16));
     
-    RCLCPP_INFO(get_logger(), "CAN Configuration loaded successfully:");
-    RCLCPP_INFO(get_logger(), "  Device: %s", can_config_.device_name.c_str());
-    RCLCPP_INFO(get_logger(), "  Bitrate: %u bps", can_config_.bitrate);
-    RCLCPP_INFO(get_logger(), "  Broadcast Interval: %u ms", can_config_.broadcast_interval_ms);
-    RCLCPP_INFO(get_logger(), "  Left Wheel CAN ID: 0x%03X", can_config_.wheels["left_wheel"].can_id);
-    RCLCPP_INFO(get_logger(), "  Right Wheel CAN ID: 0x%03X", can_config_.wheels["right_wheel"].can_id);
+    RCLCPP_INFO(this->get_logger(), "CAN Configuration loaded successfully:");
+    RCLCPP_INFO(this->get_logger(), "  Device: %s", can_config_.device_name.c_str());
+    RCLCPP_INFO(this->get_logger(), "  Bitrate: %u bps", can_config_.bitrate);
+    RCLCPP_INFO(this->get_logger(), "  Broadcast Interval: %u ms", can_config_.broadcast_interval_ms);
+    RCLCPP_INFO(this->get_logger(), "  Left Wheel CAN ID: 0x%03X", can_config_.wheels["left_wheel"].can_id);
+    RCLCPP_INFO(this->get_logger(), "  Right Wheel CAN ID: 0x%03X", can_config_.wheels["right_wheel"].can_id);
     
   } catch (const std::exception& e) {
-    RCLCPP_ERROR(get_logger(), "Failed to load CAN configuration: %s", e.what());
+    RCLCPP_ERROR(this->get_logger(), "Failed to load CAN configuration: %s", e.what());
     
     // Set default values as fallback
     can_config_.device_name = "can0";
@@ -410,7 +410,7 @@ bool DiffBotSystemHardware::loadCANConfiguration()
     can_config_.heartbeat_interval_ms = 1000;
     can_config_.heartbeat_can_id = 0x700;
     
-    RCLCPP_WARN(get_logger(), "Using default CAN configuration due to parameter loading failure");
+    RCLCPP_WARN(this->get_logger(), "Using default CAN configuration due to parameter loading failure");
   }
   
   return true;
@@ -422,7 +422,7 @@ bool DiffBotSystemHardware::initializeCANInterface()
   can_socket_ = socket(PF_CAN, SOCK_RAW, CAN_RAW);
   if (can_socket_ < 0)
   {
-    RCLCPP_ERROR(get_logger(), "Failed to create CAN socket: %s", strerror(errno));
+    RCLCPP_ERROR(this->get_logger(), "Failed to create CAN socket: %s", strerror(errno));
     return false;
   }
   
@@ -431,7 +431,7 @@ bool DiffBotSystemHardware::initializeCANInterface()
   std::strcpy(ifr.ifr_name, can_config_.device_name.c_str());
   if (ioctl(can_socket_, SIOCGIFINDEX, &ifr) < 0)
   {
-    RCLCPP_ERROR(get_logger(), "Failed to get CAN interface index for %s: %s", 
+    RCLCPP_ERROR(this->get_logger(), "Failed to get CAN interface index for %s: %s", 
                  can_config_.device_name.c_str(), strerror(errno));
     close(can_socket_);
     return false;
@@ -444,7 +444,7 @@ bool DiffBotSystemHardware::initializeCANInterface()
   
   if (bind(can_socket_, (struct sockaddr*)&addr, sizeof(addr)) < 0)
   {
-    RCLCPP_ERROR(get_logger(), "Failed to bind CAN socket to %s: %s", 
+    RCLCPP_ERROR(this->get_logger(), "Failed to bind CAN socket to %s: %s", 
                  can_config_.device_name.c_str(), strerror(errno));
     close(can_socket_);
     return false;
@@ -457,10 +457,10 @@ bool DiffBotSystemHardware::initializeCANInterface()
   
   if (setsockopt(can_socket_, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0)
   {
-    RCLCPP_WARN(get_logger(), "Failed to set CAN socket timeout: %s", strerror(errno));
+    RCLCPP_WARN(this->get_logger(), "Failed to set CAN socket timeout: %s", strerror(errno));
   }
   
-  RCLCPP_INFO(get_logger(), "CAN interface %s initialized successfully (socket fd: %d)", 
+  RCLCPP_INFO(this->get_logger(), "CAN interface %s initialized successfully (socket fd: %d)", 
               can_config_.device_name.c_str(), can_socket_);
   return true;
 }
@@ -471,7 +471,7 @@ void DiffBotSystemHardware::closeCANInterface()
   {
     close(can_socket_);
     can_socket_ = -1;
-    RCLCPP_INFO(get_logger(), "CAN interface closed");
+    RCLCPP_INFO(this->get_logger(), "CAN interface closed");
   }
 }
 
@@ -485,13 +485,13 @@ bool DiffBotSystemHardware::sendCANMessage(uint32_t can_id, const uint8_t* data,
   ssize_t bytes_sent = write(can_socket_, &frame, sizeof(frame));
   if (bytes_sent != sizeof(frame))
   {
-    RCLCPP_ERROR_THROTTLE(get_logger(), *get_clock(), 1000, 
+    RCLCPP_ERROR_THROTTLE(this->get_logger(), this->get_clock(), 1000, 
                           "Failed to send CAN message ID: 0x%03X", can_id);
     return false;
   }
   
   // Log successful CAN message transmission (throttled to avoid spam)
-  RCLCPP_DEBUG_THROTTLE(get_logger(), *get_clock(), 1000,
+  RCLCPP_DEBUG_THROTTLE(this->get_logger(), this->get_clock(), 1000,
                          "CAN TX: ID=0x%03X, DLC=%u, Data=[%02X %02X %02X %02X %02X %02X %02X %02X]",
                          can_id, length,
                          data[0], data[1], data[2], data[3],
@@ -540,7 +540,7 @@ void DiffBotSystemHardware::canBroadcastLoop()
   auto last_heartbeat = std::chrono::steady_clock::now();
   uint64_t loop_count = 0;
   
-  RCLCPP_INFO(get_logger(), "CAN broadcast loop started - sending messages every %u ms", 
+  RCLCPP_INFO(this->get_logger(), "CAN broadcast loop started - sending messages every %u ms", 
               can_config_.broadcast_interval_ms);
   
   while (can_active_)
@@ -556,7 +556,7 @@ void DiffBotSystemHardware::canBroadcastLoop()
       {
         velocity = 0.0;
       }
-      RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000, "Command timeout - stopping all wheels");
+      RCLCPP_WARN_THROTTLE(this->get_logger(), this->get_clock(), 1000, "Command timeout - stopping all wheels");
     }
     
     // Send velocity commands for each wheel
@@ -569,7 +569,7 @@ void DiffBotSystemHardware::canBroadcastLoop()
       
       if (!sendCANMessage(frame.can_id, frame.data, frame.can_dlc))
       {
-        RCLCPP_ERROR_THROTTLE(get_logger(), *get_clock(), 1000, 
+        RCLCPP_ERROR_THROTTLE(this->get_logger(), this->get_clock(), 1000, 
                               "Failed to send velocity command for %s", wheel_name.c_str());
       }
       else
@@ -577,7 +577,7 @@ void DiffBotSystemHardware::canBroadcastLoop()
         // Log periodic status of CAN transmission
         if (loop_count % 1000 == 0) // Every 10 seconds at 10ms intervals
         {
-          RCLCPP_INFO(get_logger(), "CAN Status: %s velocity=%.3f m/s, CAN_ID=0x%03X, scaled_vel=%d", 
+          RCLCPP_INFO(this->get_logger(), "CAN Status: %s velocity=%.3f m/s, CAN_ID=0x%03X, scaled_vel=%d", 
                      wheel_name.c_str(), velocity, wheel_config.can_id, 
                      static_cast<int32_t>(velocity * wheel_config.velocity_scale));
         }
@@ -594,7 +594,7 @@ void DiffBotSystemHardware::canBroadcastLoop()
       {
         sendHeartbeatMessage();
         last_heartbeat = now;
-        RCLCPP_DEBUG(get_logger(), "Heartbeat message sent on CAN ID 0x%03X", can_config_.heartbeat_can_id);
+        RCLCPP_DEBUG(this->get_logger(), "Heartbeat message sent on CAN ID 0x%03X", can_config_.heartbeat_can_id);
       }
     }
     
@@ -609,12 +609,12 @@ void DiffBotSystemHardware::canBroadcastLoop()
     }
     else if (loop_count % 100 == 0) // Log timing issues every second
     {
-      RCLCPP_WARN(get_logger(), "CAN broadcast loop running behind schedule: took %ld ms", 
+      RCLCPP_WARN(this->get_logger(), "CAN broadcast loop running behind schedule: took %ld ms", 
                  loop_duration.count());
     }
   }
   
-  RCLCPP_INFO(get_logger(), "CAN broadcast loop stopped after %lu iterations", loop_count);
+  RCLCPP_INFO(this->get_logger(), "CAN broadcast loop stopped after %lu iterations", loop_count);
 }
 
 void DiffBotSystemHardware::sendHeartbeatMessage()
@@ -633,7 +633,7 @@ void DiffBotSystemHardware::sendHeartbeatMessage()
   
   if (!sendCANMessage(can_config_.heartbeat_can_id, heartbeat_data, 8))
   {
-    RCLCPP_ERROR_THROTTLE(get_logger(), *get_clock(), 5000, "Failed to send heartbeat message");
+    RCLCPP_ERROR_THROTTLE(this->get_logger(), this->get_clock(), 5000, "Failed to send heartbeat message");
   }
 }
 
