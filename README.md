@@ -48,7 +48,7 @@ cd ~/ros2_ws/src/ros_diff_bot
 ros2 launch ros_diff_bot diffbot_can.launch.py \
   can_device:=vcan0 \
   use_mock_hardware:=true \
-  --ros-args --log-level debug
+  log_level:=debug
 
 # Terminal 2: Monitor CAN messages
 ./setup_can.sh monitor vcan0
@@ -109,7 +109,7 @@ Launch with debug logging to see detailed CAN message information:
 ros2 launch ros_diff_bot diffbot_can.launch.py \
   can_device:=vcan0 \
   use_mock_hardware:=true \
-  --ros-args --log-level debug
+  log_level:=debug
 ```
 
 ### 2. Monitor Console Output

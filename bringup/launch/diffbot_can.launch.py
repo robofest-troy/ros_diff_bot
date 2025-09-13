@@ -81,6 +81,13 @@ def generate_launch_description():
             description="Use external CAN configuration file.",
         )
     )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "log_level",
+            default_value="info",
+            description="Logging level (debug, info, warn, error, fatal).",
+        )
+    )
 
     # Initialize Arguments
     gui = LaunchConfiguration("gui")
@@ -91,6 +98,7 @@ def generate_launch_description():
     right_wheel_can_id = LaunchConfiguration("right_wheel_can_id")
     broadcast_interval_ms = LaunchConfiguration("broadcast_interval_ms")
     use_can_config_file = LaunchConfiguration("use_can_config_file")
+    log_level = LaunchConfiguration("log_level")
 
     # Get URDF via xacro
     robot_description_content = Command(
@@ -146,13 +154,15 @@ def generate_launch_description():
         package="controller_manager",
         executable="ros2_control_node",
         parameters=[robot_controllers, can_config],
-        output="both",
+    output="both",
+    arguments=["--ros-args", "--log-level", log_level],
     )
     robot_state_pub_node = Node(
         package="robot_state_publisher",
         executable="robot_state_publisher",
         output="both",
-        parameters=[robot_description],
+    parameters=[robot_description],
+    arguments=["--ros-args", "--log-level", log_level],
     )
     rviz_node = Node(
         package="rviz2",
@@ -166,7 +176,7 @@ def generate_launch_description():
     joint_state_broadcaster_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["joint_state_broadcaster"],
+    arguments=["joint_state_broadcaster", "--ros-args", "--log-level", log_level],
     )
 
     robot_controller_spawner = Node(
@@ -178,6 +188,7 @@ def generate_launch_description():
             robot_controllers,
             "--controller-ros-args",
             "-r /diffbot_base_controller/cmd_vel:=/cmd_vel",
+            "--ros-args", "--log-level", log_level,
         ],
     )
 
