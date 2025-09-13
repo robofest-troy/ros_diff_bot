@@ -22,6 +22,7 @@
 #include <thread>
 #include <atomic>
 #include <chrono>
+#include <cstdint>
 
 #include "hardware_interface/handle.hpp"
 #include "hardware_interface/hardware_info.hpp"

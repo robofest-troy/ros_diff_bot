@@ -17,6 +17,7 @@
 #include <chrono>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <iomanip>
 #include <limits>
 #include <memory>
@@ -295,16 +296,16 @@ bool DiffBotSystemHardware::loadCANConfiguration()
   try {
     // CAN Interface settings
     can_config_.device_name = info_.hardware_parameters.at("can_device");
-    can_config_.bitrate = std::stoul(info_.hardware_parameters.at("can_bitrate"));
-    can_config_.timeout_ms = std::stoul(info_.hardware_parameters.count("can_timeout_ms") ? 
-                                       info_.hardware_parameters.at("can_timeout_ms") : "100");
-    can_config_.broadcast_interval_ms = std::stoul(info_.hardware_parameters.at("broadcast_interval_ms"));
-    can_config_.max_retries = std::stoul(info_.hardware_parameters.count("max_retries") ? 
-                                        info_.hardware_parameters.at("max_retries") : "3");
+    can_config_.bitrate = static_cast<uint32_t>(std::stoul(info_.hardware_parameters.at("can_bitrate")));
+    can_config_.timeout_ms = static_cast<uint32_t>(std::stoul(info_.hardware_parameters.count("can_timeout_ms") ? 
+                                       info_.hardware_parameters.at("can_timeout_ms") : "100"));
+    can_config_.broadcast_interval_ms = static_cast<uint32_t>(std::stoul(info_.hardware_parameters.at("broadcast_interval_ms")));
+    can_config_.max_retries = static_cast<uint32_t>(std::stoul(info_.hardware_parameters.count("max_retries") ? 
+                                        info_.hardware_parameters.at("max_retries") : "3"));
     
     // Wheel configurations
     CANWheelConfig left_wheel;
-    left_wheel.can_id = std::stoul(info_.hardware_parameters.at("left_wheel_can_id"), nullptr, 16);
+    left_wheel.can_id = static_cast<uint32_t>(std::stoul(info_.hardware_parameters.at("left_wheel_can_id"), nullptr, 16));
     left_wheel.joint_name = "left_wheel_joint";
     left_wheel.velocity_scale = std::stod(info_.hardware_parameters.count("velocity_scale") ? 
                                          info_.hardware_parameters.at("velocity_scale") : "1000.0");
@@ -313,7 +314,7 @@ bool DiffBotSystemHardware::loadCANConfiguration()
     can_config_.wheels["left_wheel"] = left_wheel;
     
     CANWheelConfig right_wheel;
-    right_wheel.can_id = std::stoul(info_.hardware_parameters.at("right_wheel_can_id"), nullptr, 16);
+    right_wheel.can_id = static_cast<uint32_t>(std::stoul(info_.hardware_parameters.at("right_wheel_can_id"), nullptr, 16));
     right_wheel.joint_name = "right_wheel_joint";
     right_wheel.velocity_scale = std::stod(info_.hardware_parameters.count("velocity_scale") ? 
                                           info_.hardware_parameters.at("velocity_scale") : "1000.0");
@@ -322,28 +323,28 @@ bool DiffBotSystemHardware::loadCANConfiguration()
     can_config_.wheels["right_wheel"] = right_wheel;
     
     // Message format
-    can_config_.data_length = std::stoul(info_.hardware_parameters.count("data_length") ? 
-                                        info_.hardware_parameters.at("data_length") : "8");
-    can_config_.velocity_byte_start = std::stoul(info_.hardware_parameters.count("velocity_byte_start") ? 
-                                                info_.hardware_parameters.at("velocity_byte_start") : "0");
-    can_config_.velocity_byte_length = std::stoul(info_.hardware_parameters.count("velocity_byte_length") ? 
-                                                 info_.hardware_parameters.at("velocity_byte_length") : "4");
-    can_config_.status_byte = std::stoul(info_.hardware_parameters.count("status_byte") ? 
-                                        info_.hardware_parameters.at("status_byte") : "4");
-    can_config_.checksum_byte = std::stoul(info_.hardware_parameters.count("checksum_byte") ? 
-                                          info_.hardware_parameters.at("checksum_byte") : "7");
+    can_config_.data_length = static_cast<uint8_t>(std::stoul(info_.hardware_parameters.count("data_length") ? 
+                                        info_.hardware_parameters.at("data_length") : "8"));
+    can_config_.velocity_byte_start = static_cast<uint8_t>(std::stoul(info_.hardware_parameters.count("velocity_byte_start") ? 
+                                                info_.hardware_parameters.at("velocity_byte_start") : "0"));
+    can_config_.velocity_byte_length = static_cast<uint8_t>(std::stoul(info_.hardware_parameters.count("velocity_byte_length") ? 
+                                                 info_.hardware_parameters.at("velocity_byte_length") : "4"));
+    can_config_.status_byte = static_cast<uint8_t>(std::stoul(info_.hardware_parameters.count("status_byte") ? 
+                                        info_.hardware_parameters.at("status_byte") : "4"));
+    can_config_.checksum_byte = static_cast<uint8_t>(std::stoul(info_.hardware_parameters.count("checksum_byte") ? 
+                                          info_.hardware_parameters.at("checksum_byte") : "7"));
     
     // Safety configuration
     can_config_.max_velocity_command = std::stod(info_.hardware_parameters.count("max_velocity_command") ? 
                                                 info_.hardware_parameters.at("max_velocity_command") : "10.0");
-    can_config_.emergency_stop_can_id = std::stoul(info_.hardware_parameters.count("emergency_stop_can_id") ? 
-                                                  info_.hardware_parameters.at("emergency_stop_can_id") : "0x080", nullptr, 16);
+    can_config_.emergency_stop_can_id = static_cast<uint32_t>(std::stoul(info_.hardware_parameters.count("emergency_stop_can_id") ? 
+                                                  info_.hardware_parameters.at("emergency_stop_can_id") : "0x080", nullptr, 16));
     
     std::string enable_watchdog_str = info_.hardware_parameters.count("enable_watchdog") ? 
                                      info_.hardware_parameters.at("enable_watchdog") : "true";
     can_config_.enable_watchdog = (enable_watchdog_str == "true");
-    can_config_.watchdog_timeout_ms = std::stoul(info_.hardware_parameters.count("watchdog_timeout_ms") ? 
-                                                 info_.hardware_parameters.at("watchdog_timeout_ms") : "500");
+    can_config_.watchdog_timeout_ms = static_cast<uint32_t>(std::stoul(info_.hardware_parameters.count("watchdog_timeout_ms") ? 
+                                                 info_.hardware_parameters.at("watchdog_timeout_ms") : "500"));
     
     // Monitoring configuration
     std::string enable_can_monitoring_str = info_.hardware_parameters.count("enable_can_monitoring") ? 
@@ -353,10 +354,10 @@ bool DiffBotSystemHardware::loadCANConfiguration()
     std::string enable_heartbeat_str = info_.hardware_parameters.count("enable_heartbeat") ? 
                                       info_.hardware_parameters.at("enable_heartbeat") : "true";
     can_config_.enable_heartbeat = (enable_heartbeat_str == "true");
-    can_config_.heartbeat_interval_ms = std::stoul(info_.hardware_parameters.count("heartbeat_interval_ms") ? 
-                                                  info_.hardware_parameters.at("heartbeat_interval_ms") : "1000");
-    can_config_.heartbeat_can_id = std::stoul(info_.hardware_parameters.count("heartbeat_can_id") ? 
-                                             info_.hardware_parameters.at("heartbeat_can_id") : "0x700", nullptr, 16);
+    can_config_.heartbeat_interval_ms = static_cast<uint32_t>(std::stoul(info_.hardware_parameters.count("heartbeat_interval_ms") ? 
+                                                  info_.hardware_parameters.at("heartbeat_interval_ms") : "1000"));
+    can_config_.heartbeat_can_id = static_cast<uint32_t>(std::stoul(info_.hardware_parameters.count("heartbeat_can_id") ? 
+                                             info_.hardware_parameters.at("heartbeat_can_id") : "0x700", nullptr, 16));
     
     RCLCPP_INFO(get_logger(), "CAN Configuration loaded successfully:");
     RCLCPP_INFO(get_logger(), "  Device: %s", can_config_.device_name.c_str());
