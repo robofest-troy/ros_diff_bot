@@ -32,6 +32,7 @@
 #include "rclcpp/duration.hpp"
 #include "rclcpp/macros.hpp"
 #include "rclcpp/time.hpp"
+#include "rclcpp/logger.hpp"
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 #include "rclcpp_lifecycle/state.hpp"
 
@@ -110,6 +111,10 @@ private:
   // Parameters for the DiffBot simulation
   double hw_start_sec_;
   double hw_stop_sec_;
+  
+  // Logger
+  rclcpp::Logger logger_;
+  rclcpp::Clock::SharedPtr clock_;
   
   // CAN communication members
   CANInterfaceConfig can_config_;
