@@ -113,12 +113,13 @@ private:
   double hw_stop_sec_;
   
   // Logger
-  rclcpp::Logger logger_;
+  // rclcpp::Logger has a private default constructor, so initialize here
+  rclcpp::Logger logger_{rclcpp::get_logger("DiffBotSystemHardware")};
   rclcpp::Clock::SharedPtr clock_;
   
   // CAN communication members
   CANInterfaceConfig can_config_;
-  int can_socket_;
+  int can_socket_{-1};
   std::atomic<bool> can_active_;
   std::thread can_broadcast_thread_;
   std::chrono::steady_clock::time_point last_command_time_;

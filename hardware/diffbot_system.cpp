@@ -42,8 +42,7 @@ hardware_interface::CallbackReturn DiffBotSystemHardware::on_init(
     return hardware_interface::CallbackReturn::ERROR;
   }
 
-  // Initialize logger
-  logger_ = rclcpp::get_logger("DiffBotSystemHardware");
+  // Clock initialization (logger_ initialized in header)
   clock_ = std::make_shared<rclcpp::Clock>(RCL_ROS_TIME);
 
   // BEGIN: This part here is for exemplary purposes - Please do not copy to your production code
@@ -486,7 +485,8 @@ bool DiffBotSystemHardware::sendCANMessage(uint32_t can_id, const uint8_t* data,
   frame.can_dlc = length;
   std::memcpy(frame.data, data, length);
   
-  ssize_t bytes_sent = write(can_socket_, &frame, sizeof(frame));
+  // Use global POSIX ::write, not the class's write() method
+  ssize_t bytes_sent = ::write(can_socket_, &frame, sizeof(frame));
   if (bytes_sent != sizeof(frame))
   {
     RCLCPP_ERROR_THROTTLE(logger_, *clock_, 1000, 
